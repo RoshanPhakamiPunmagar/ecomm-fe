@@ -29,6 +29,8 @@ function LoginPage() {
     try {
       const res = await api.post("/auth/login", formData);
 
+      console.log("LOGIN RESPONSE:", res.data); // 👈 add this
+
       localStorage.setItem("accessJWT", res.data.tokens.accessJWT);
       localStorage.setItem("refreshJWT", res.data.tokens.refreshJWT);
 

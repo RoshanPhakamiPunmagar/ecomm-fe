@@ -1,58 +1,66 @@
 import React, { useEffect, useState } from "react";
-import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
-import PaymentForm from "../components/PaymentForm";
-import { getStripeKey, createPaymentIntent } from "../api/stripe";
+import { Elements } from "@stripe/react-stripe-js";
+import CheckoutForm from "../components/CheckoutForm";
 
-const CheckoutPage = () => {
+export default function CheckoutPage() {
   const [stripePromise, setStripePromise] = useState(null);
   const [clientSecret, setClientSecret] = useState("");
-  const token = localStorage.getItem("token"); // raw token
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  // Load Stripe publishable key
   useEffect(() => {
     const initStripe = async () => {
       try {
-        const stripeKey = await getStripeKey(); // string only
-        setStripePromise(loadStripe(stripeKey));
+        const token = localStorage.getItem("accessJWT");
+
+        if (!token) {
+          window.location.href = "/login";
+          return;
+        }
+
+        // Load Stripe publishable key
+        const configRes = await fetch("http://localhost:3000/payment/config");
+        if (!configRes.ok) throw new Error("Failed to load Stripe config");
+        const { publishableKey } = await configRes.json();
+
+        const stripe = await loadStripe(publishableKey);
+        setStripePromise(stripe);
+
+        // Create PaymentIntent
+        const intentRes = await fetch("http://localhost:3000/payment/intent", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ amount: 120000 }),
+        });
+
+        const intentData = await intentRes.json();
+        if (!intentRes.ok)
+          throw new Error(
+            intentData.message || "Failed to create payment intent",
+          );
+
+        setClientSecret(intentData.clientSecret);
       } catch (err) {
-        console.error("Error fetching Stripe key:", err);
+        console.error("Stripe initialization error:", err);
+        setError(err.message || "Something went wrong");
+      } finally {
+        setLoading(false);
       }
     };
+
     initStripe();
   }, []);
 
-  // Create PaymentIntent
-  useEffect(() => {
-    const initPaymentIntent = async () => {
-      try {
-        const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-        if (!cart.length) return;
-
-        const amount =
-          cart.reduce((sum, item) => sum + item.price * item.quantity, 0) * 100;
-
-        const res = await createPaymentIntent(amount, token);
-        if (res.clientSecret) setClientSecret(res.clientSecret);
-      } catch (err) {
-        console.error("Error creating PaymentIntent:", err);
-      }
-    };
-    initPaymentIntent();
-  }, [token]);
-
-  // Do not render Elements until both are ready
-  if (!stripePromise || !clientSecret)
-    return <div>Loading payment details...</div>;
+  if (loading) return <p>Loading payment...</p>;
+  if (error) return <p style={{ color: "red" }}>Error: {error}</p>;
 
   return (
-    <div style={{ maxWidth: "500px", margin: "50px auto" }}>
-      <h2>Complete Your Payment</h2>
-      <Elements stripe={stripePromise} options={{ clientSecret }}>
-        <PaymentForm />
-      </Elements>
-    </div>
+    <Elements stripe={stripePromise} options={{ clientSecret }}>
+      <CheckoutForm clientSecret={clientSecret} />
+    </Elements>
   );
-};
-
-export default CheckoutPage;
+}

@@ -12,7 +12,6 @@ import EmailVerificationPage from "./pages/EmailVerificationPage.jsx";
 import CartPage from "./pages/CartPage.jsx";
 import CheckoutPage from "./pages/CheckoutPage.jsx";
 import OrderHistoryPage from "./pages/OrderHistoryPage.jsx";
-import StripePaymentPage from "./pages/StripePaymentPage.jsx";
 
 // Components
 import Navbar from "./components/Navbar.js";
@@ -35,7 +34,7 @@ function App() {
           element={<EmailVerificationPage />}
         />
         <Route path="/cart" element={<CartPage />} />
-        <Route path="/checkout" element={<StripePaymentPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/order-summary" element={<OrderSummary />} />
         <Route path="/orders" element={<OrderHistoryPage />} />
       </Routes>
