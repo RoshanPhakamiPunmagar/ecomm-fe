@@ -5,10 +5,14 @@ import { useState, useEffect } from "react";
 
 function Navbar() {
   const navigate = useNavigate();
+
   const [cartCount, setCartCount] = useState(0);
-  const isLoggedIn = !!localStorage.getItem("accessJWT");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
+    const token = localStorage.getItem("accessJWT");
+    setIsLoggedIn(!!token);
+
     const cart = JSON.parse(localStorage.getItem("cart")) || [];
     const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
     setCartCount(totalItems);
@@ -17,7 +21,10 @@ function Navbar() {
   const handleLogout = () => {
     localStorage.removeItem("accessJWT");
     localStorage.removeItem("refreshJWT");
-    toast.info("Logged out");
+
+    setIsLoggedIn(false);
+
+    toast.info("Logged out successfully");
     navigate("/login");
   };
 
@@ -33,34 +40,32 @@ function Navbar() {
           type="button"
           data-bs-toggle="collapse"
           data-bs-target="#navbarNav"
-          aria-controls="navbarNav"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
         >
           <span className="navbar-toggler-icon"></span>
         </button>
 
         <div className="collapse navbar-collapse" id="navbarNav">
-          {/* Left: Search bar */}
+          {/* Search */}
           <form className="d-flex mx-auto" style={{ maxWidth: "400px" }}>
             <input
               className="form-control me-2"
               type="search"
               placeholder="Search products..."
-              aria-label="Search"
             />
             <button className="btn btn-outline-primary" type="submit">
               Search
             </button>
           </form>
 
-          {/* Right: Links */}
+          {/* Right Side */}
           <ul className="navbar-nav ms-auto align-items-center">
             {isLoggedIn ? (
               <>
+                {/* Cart */}
                 <li className="nav-item me-3 position-relative">
                   <Link className="nav-link" to="/cart">
                     <FaShoppingCart size={20} />
+
                     {cartCount > 0 && (
                       <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                         {cartCount}
@@ -69,25 +74,39 @@ function Navbar() {
                   </Link>
                 </li>
 
+                {/* Account Dropdown */}
                 <li className="nav-item dropdown">
-                  <button
-                    className="btn btn-link nav-link dropdown-toggle"
-                    id="profileDropdown"
+                  <a
+                    className="nav-link dropdown-toggle d-flex align-items-center"
+                    href="#"
+                    id="accountDropdown"
+                    role="button"
                     data-bs-toggle="dropdown"
+                    aria-expanded="false"
                   >
-                    <FaUserCircle size={20} /> Account
-                  </button>
+                    <FaUserCircle size={22} className="me-1" />
+                    Account
+                  </a>
+
                   <ul
                     className="dropdown-menu dropdown-menu-end"
-                    aria-labelledby="profileDropdown"
+                    aria-labelledby="accountDropdown"
                   >
                     <li>
                       <Link className="dropdown-item" to="/orders">
                         My Orders
                       </Link>
                     </li>
+
                     <li>
-                      <button className="dropdown-item" onClick={handleLogout}>
+                      <hr className="dropdown-divider" />
+                    </li>
+
+                    <li>
+                      <button
+                        className="dropdown-item text-danger"
+                        onClick={handleLogout}
+                      >
                         Logout
                       </button>
                     </li>
@@ -101,6 +120,7 @@ function Navbar() {
                     Login
                   </Link>
                 </li>
+
                 <li className="nav-item">
                   <Link className="nav-link" to="/signup">
                     Signup

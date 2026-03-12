@@ -12,22 +12,23 @@ export default function CheckoutPage() {
   useEffect(() => {
     const initStripe = async () => {
       try {
+        // ✅ Get JWT from localStorage
         const token = localStorage.getItem("accessJWT");
-
         if (!token) {
           window.location.href = "/login";
           return;
         }
 
-        // Load Stripe publishable key
+        // 1️⃣ Load Stripe publishable key
         const configRes = await fetch("http://localhost:3000/payment/config");
-        if (!configRes.ok) throw new Error("Failed to load Stripe config");
+        if (!configRes.ok)
+          throw new Error("Failed to load Stripe configuration");
         const { publishableKey } = await configRes.json();
 
         const stripe = await loadStripe(publishableKey);
         setStripePromise(stripe);
 
-        // Create PaymentIntent
+        // 2️⃣ Create PaymentIntent
         const intentRes = await fetch("http://localhost:3000/payment/intent", {
           method: "POST",
           headers: {
@@ -55,9 +56,11 @@ export default function CheckoutPage() {
     initStripe();
   }, []);
 
+  // 3️⃣ Loading and error states
   if (loading) return <p>Loading payment...</p>;
   if (error) return <p style={{ color: "red" }}>Error: {error}</p>;
 
+  // 4️⃣ Render Stripe Elements with clientSecret
   return (
     <Elements stripe={stripePromise} options={{ clientSecret }}>
       <CheckoutForm clientSecret={clientSecret} />

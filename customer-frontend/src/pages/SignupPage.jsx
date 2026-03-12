@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import api from "../services/api";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import api from "../services/api"; // Axios instance pointing to backend
 
 const SignupPage = () => {
   const [email, setEmail] = useState("");
@@ -17,11 +17,15 @@ const SignupPage = () => {
     setLoading(true);
 
     try {
+      // 1️⃣ Call backend signup API
       const res = await api.post("/auth/signup", { email, password });
 
+      // 2️⃣ Backend should send verification email
       if (res.data.status === "success") {
-        toast.success("Signup successful! Please verify your email.");
-        navigate("/login");
+        toast.success("Signup successful! Verification email sent.");
+
+        // 3️⃣ Redirect to success page with email info
+        navigate("/signup-success", { state: { email } });
       }
     } catch (err) {
       const msg = err.response?.data?.message || "Signup failed";
@@ -41,10 +45,7 @@ const SignupPage = () => {
     >
       <div
         className="card shadow-lg p-4"
-        style={{
-          width: "400px",
-          borderRadius: "15px",
-        }}
+        style={{ width: "400px", borderRadius: "15px" }}
       >
         <h3 className="text-center mb-4">Create Account</h3>
 
@@ -63,7 +64,6 @@ const SignupPage = () => {
 
           <div className="mb-3 position-relative">
             <label className="form-label">Password</label>
-
             <input
               type={showPassword ? "text" : "password"}
               placeholder="Enter password"
@@ -72,7 +72,6 @@ const SignupPage = () => {
               className="form-control"
               required
             />
-
             <span
               onClick={() => setShowPassword(!showPassword)}
               style={{
@@ -91,7 +90,7 @@ const SignupPage = () => {
             className="btn btn-primary w-100"
             disabled={loading}
           >
-            {loading ? "Creating Account..." : "Signup"}
+            {loading ? "Signing up..." : "Signup"}
           </button>
         </form>
 

@@ -169,9 +169,6 @@ function ProductDetailPage() {
           </button>
 
           <div className="mt-3">
-            <Link to="/cart" className="btn btn-outline-primary me-2">
-              View Cart
-            </Link>
             <Link to="/home" className="btn btn-outline-secondary">
               Continue Shopping
             </Link>
