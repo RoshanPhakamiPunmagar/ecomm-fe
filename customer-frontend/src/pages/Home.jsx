@@ -21,14 +21,14 @@ function Home() {
     try {
       setLoading(true);
 
-      const res = await api.get("/products", {
+      const { data } = await api.get("/products", {
         params: filters,
       });
 
-      setProducts(res.data.products);
-      setPagination(res.data.pagination);
+      setProducts(data.products || []);
+      setPagination(data.pagination || {});
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching products:", err);
     } finally {
       setLoading(false);
     }
@@ -39,16 +39,34 @@ function Home() {
   }, [filters]);
 
   const handleChange = (e) => {
-    setFilters({ ...filters, [e.target.name]: e.target.value, page: 1 });
+    const { name, value } = e.target;
+
+    setFilters((prev) => ({
+      ...prev,
+      [name]: value,
+      page: 1,
+    }));
+  };
+
+  const handleSort = (e) => {
+    setFilters((prev) => ({
+      ...prev,
+      sortBy: "price",
+      order: e.target.value,
+      page: 1,
+    }));
   };
 
   const changePage = (pageNumber) => {
-    setFilters({ ...filters, page: pageNumber });
+    setFilters((prev) => ({
+      ...prev,
+      page: pageNumber,
+    }));
   };
 
   return (
     <div className="container mt-4">
-      {/* Hero Header */}
+      {/* Header */}
       <div className="mb-4 text-center">
         <h2 className="fw-bold">Discover Products</h2>
         <p className="text-muted">Find the best products at the best prices</p>
@@ -57,48 +75,48 @@ function Home() {
       {/* Filters */}
       <div className="card shadow-sm p-3 mb-4">
         <div className="row g-3">
+          {/* Search */}
           <div className="col-md-3">
             <input
               type="text"
               className="form-control"
               placeholder="🔍 Search products..."
               name="search"
+              value={filters.search}
               onChange={handleChange}
             />
           </div>
 
+          {/* Min Price */}
           <div className="col-md-2">
             <input
               type="number"
               className="form-control"
               placeholder="Min Price"
               name="minPrice"
+              value={filters.minPrice}
               onChange={handleChange}
             />
           </div>
 
+          {/* Max Price */}
           <div className="col-md-2">
             <input
               type="number"
               className="form-control"
               placeholder="Max Price"
               name="maxPrice"
+              value={filters.maxPrice}
               onChange={handleChange}
             />
           </div>
 
+          {/* Sort */}
           <div className="col-md-3">
             <select
               className="form-select"
-              name="order"
-              onChange={(e) =>
-                setFilters({
-                  ...filters,
-                  sortBy: "price",
-                  order: e.target.value,
-                  page: 1,
-                })
-              }
+              value={filters.order}
+              onChange={handleSort}
             >
               <option value="asc">Price: Low → High</option>
               <option value="desc">Price: High → Low</option>
@@ -107,11 +125,13 @@ function Home() {
         </div>
       </div>
 
-      {/* Product Grid */}
+      {/* Products */}
       {loading ? (
         <div className="text-center py-5">
           <div className="spinner-border text-primary"></div>
         </div>
+      ) : products.length === 0 ? (
+        <div className="text-center py-5 text-muted">No products found</div>
       ) : (
         <div className="row">
           {products.map((product) => (
@@ -123,24 +143,28 @@ function Home() {
       )}
 
       {/* Pagination */}
-      {pagination.pages > 1 && (
+      {pagination?.pages > 1 && (
         <nav className="d-flex justify-content-center mt-4">
           <ul className="pagination">
-            {[...Array(pagination.pages).keys()].map((num) => (
-              <li
-                key={num}
-                className={`page-item ${
-                  pagination.page === num + 1 ? "active" : ""
-                }`}
-              >
-                <button
-                  className="page-link"
-                  onClick={() => changePage(num + 1)}
+            {[...Array(pagination.pages)].map((_, index) => {
+              const pageNumber = index + 1;
+
+              return (
+                <li
+                  key={pageNumber}
+                  className={`page-item ${
+                    pagination.page === pageNumber ? "active" : ""
+                  }`}
                 >
-                  {num + 1}
-                </button>
-              </li>
-            ))}
+                  <button
+                    className="page-link"
+                    onClick={() => changePage(pageNumber)}
+                  >
+                    {pageNumber}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </nav>
       )}

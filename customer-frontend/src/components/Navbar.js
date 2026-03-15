@@ -45,16 +45,6 @@ function Navbar() {
         </button>
 
         <div className="collapse navbar-collapse" id="navbarNav">
-          {/* Search */}
-          <form className="d-flex mx-auto" style={{ maxWidth: "400px" }}>
-            <input
-              className="form-control me-2"
-              type="search"
-              placeholder="Search products..."
-            />
-            <button className="btn btn-outline-primary">Search</button>
-          </form>
-
           {/* Right side */}
           <ul className="navbar-nav ms-auto align-items-center">
             {/* Cart always visible */}
