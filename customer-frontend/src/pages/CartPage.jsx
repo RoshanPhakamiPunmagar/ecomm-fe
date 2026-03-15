@@ -3,23 +3,26 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import CartItem from "../components/CartItem";
 import OrderSummary from "../components/OrderSummary";
+import { toast } from "react-toastify";
 
 function CartPage() {
   const [cartItems, setCartItems] = useState([]);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [productToUpdate, setProductToUpdate] = useState(null);
+  const [lastItemMessage, setLastItemMessage] = useState(false);
+  const [actionType, setActionType] = useState(""); // "decrease" or "remove"
+
   const navigate = useNavigate();
 
-  // Load cart from localStorage on mount
   useEffect(() => {
     const savedCart = localStorage.getItem("cart");
     if (savedCart) setCartItems(JSON.parse(savedCart));
   }, []);
 
-  // Save cart whenever it changes
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cartItems));
   }, [cartItems]);
 
-  // Increase quantity
   const increaseQty = (productId) => {
     const updatedCart = cartItems.map((item) =>
       item.productId === productId
@@ -29,39 +32,76 @@ function CartPage() {
     setCartItems(updatedCart);
   };
 
-  // Decrease quantity
-  const decreaseQty = (productId) => {
-    const updatedCart = cartItems
-      .map((item) =>
-        item.productId === productId
-          ? { ...item, quantity: item.quantity - 1 }
-          : item,
-      )
-      .filter((item) => item.quantity > 0);
-    setCartItems(updatedCart);
+  // Handle decrease (-) button click
+  const handleDecreaseClick = (productId) => {
+    const item = cartItems.find((i) => i.productId === productId);
+    if (!item) return;
+
+    setProductToUpdate(productId);
+    setLastItemMessage(item.quantity === 1);
+    setActionType("decrease");
+    setShowConfirm(true);
   };
 
-  // Remove item
-  const removeItem = (productId) => {
-    setCartItems(cartItems.filter((item) => item.productId !== productId));
+  // Handle remove button click
+  const handleRemoveClick = (productId) => {
+    setProductToUpdate(productId);
+    setLastItemMessage(false);
+    setActionType("remove");
+    setShowConfirm(true);
   };
 
-  // Clear cart after order
+  // Confirm modal action
+  const confirmAction = () => {
+    if (!productToUpdate) return;
+
+    if (actionType === "decrease") {
+      // decrease 1 quantity
+      setCartItems((prev) =>
+        prev
+          .map((item) =>
+            item.productId === productToUpdate
+              ? { ...item, quantity: item.quantity - 1 }
+              : item,
+          )
+          .filter((item) => item.quantity > 0),
+      );
+      toast.success("Quantity decreased by 1");
+    }
+
+    if (actionType === "remove") {
+      // decrease 1 quantity only
+      setCartItems((prev) =>
+        prev
+          .map((item) =>
+            item.productId === productToUpdate
+              ? { ...item, quantity: item.quantity - 1 }
+              : item,
+          )
+          .filter((item) => item.quantity > 0),
+      );
+      toast.success("Removed 1 quantity from cart");
+    }
+
+    setShowConfirm(false);
+    setProductToUpdate(null);
+    setLastItemMessage(false);
+    setActionType("");
+  };
+
   const handleOrderSuccess = () => {
     setCartItems([]);
     localStorage.removeItem("cart");
+    toast.success("Order placed successfully!");
   };
 
-  // Calculate total amount in cents
   const totalAmountCents = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity * 100,
     0,
   );
 
-  // Navigate to checkout page
   const handleProceedToCheckout = () => {
     if (cartItems.length === 0) return;
-    // Optionally, store total or cart in localStorage if needed by checkout
     navigate("/checkout");
   };
 
@@ -79,7 +119,6 @@ function CartPage() {
         </ol>
       </nav>
 
-      {/* Continue Shopping */}
       <div className="mb-3">
         <Link to="/home" className="btn btn-outline-primary">
           ← Continue Shopping
@@ -98,7 +137,6 @@ function CartPage() {
         </div>
       ) : (
         <div className="row">
-          {/* Cart Items */}
           <div className="col-md-8 mb-4">
             <div className="card p-3 shadow-sm">
               <h5 className="mb-3">Cart Items</h5>
@@ -107,14 +145,13 @@ function CartPage() {
                   key={item.productId}
                   item={item}
                   onIncrease={() => increaseQty(item.productId)}
-                  onDecrease={() => decreaseQty(item.productId)}
-                  onRemove={() => removeItem(item.productId)}
+                  onDecrease={() => handleDecreaseClick(item.productId)}
+                  onRemove={() => handleRemoveClick(item.productId)}
                 />
               ))}
             </div>
           </div>
 
-          {/* Order Summary */}
           <div className="col-md-4">
             <OrderSummary
               cartItems={cartItems}
@@ -129,6 +166,44 @@ function CartPage() {
             <p className="text-muted mt-2">
               Total: ${(totalAmountCents / 100).toFixed(2)} AUD
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {showConfirm && (
+        <div
+          className="modal show d-block"
+          tabIndex="-1"
+          role="dialog"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Confirm Action</h5>
+              </div>
+              <div className="modal-body">
+                <p>
+                  {lastItemMessage
+                    ? "This is the last one of this product. Are you sure you want to remove 1 quantity from the cart?"
+                    : actionType === "decrease"
+                      ? "Are you sure you want to decrease 1 quantity?"
+                      : "Are you sure you want to remove 1 quantity from the cart?"}
+                </p>
+              </div>
+              <div className="modal-footer">
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setShowConfirm(false)}
+                >
+                  No
+                </button>
+                <button className="btn btn-danger" onClick={confirmAction}>
+                  Yes
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

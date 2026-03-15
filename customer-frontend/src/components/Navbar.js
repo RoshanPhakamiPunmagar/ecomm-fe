@@ -52,67 +52,56 @@ function Navbar() {
               type="search"
               placeholder="Search products..."
             />
-            <button className="btn btn-outline-primary" type="submit">
-              Search
-            </button>
+            <button className="btn btn-outline-primary">Search</button>
           </form>
 
-          {/* Right Side */}
+          {/* Right side */}
           <ul className="navbar-nav ms-auto align-items-center">
+            {/* Cart always visible */}
+            <li className="nav-item me-3 position-relative">
+              <Link className="nav-link" to="/cart">
+                <FaShoppingCart size={22} />
+
+                {cartCount > 0 && (
+                  <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    {cartCount}
+                  </span>
+                )}
+              </Link>
+            </li>
+
             {isLoggedIn ? (
-              <>
-                {/* Cart */}
-                <li className="nav-item me-3 position-relative">
-                  <Link className="nav-link" to="/cart">
-                    <FaShoppingCart size={20} />
+              <li className="nav-item dropdown">
+                <a
+                  className="nav-link dropdown-toggle"
+                  href="#"
+                  id="accountDropdown"
+                  role="button"
+                  data-bs-toggle="dropdown"
+                >
+                  <FaUserCircle size={22} /> Account
+                </a>
 
-                    {cartCount > 0 && (
-                      <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                        {cartCount}
-                      </span>
-                    )}
-                  </Link>
-                </li>
+                <ul
+                  className="dropdown-menu dropdown-menu-end"
+                  aria-labelledby="accountDropdown"
+                >
+                  <li>
+                    <Link className="dropdown-item" to="/orders">
+                      My Orders
+                    </Link>
+                  </li>
 
-                {/* Account Dropdown */}
-                <li className="nav-item dropdown">
-                  <a
-                    className="nav-link dropdown-toggle d-flex align-items-center"
-                    href="#"
-                    id="accountDropdown"
-                    role="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    <FaUserCircle size={22} className="me-1" />
-                    Account
-                  </a>
-
-                  <ul
-                    className="dropdown-menu dropdown-menu-end"
-                    aria-labelledby="accountDropdown"
-                  >
-                    <li>
-                      <Link className="dropdown-item" to="/orders">
-                        My Orders
-                      </Link>
-                    </li>
-
-                    <li>
-                      <hr className="dropdown-divider" />
-                    </li>
-
-                    <li>
-                      <button
-                        className="dropdown-item text-danger"
-                        onClick={handleLogout}
-                      >
-                        Logout
-                      </button>
-                    </li>
-                  </ul>
-                </li>
-              </>
+                  <li>
+                    <button
+                      className="dropdown-item text-danger"
+                      onClick={handleLogout}
+                    >
+                      Logout
+                    </button>
+                  </li>
+                </ul>
+              </li>
             ) : (
               <>
                 <li className="nav-item">
