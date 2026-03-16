@@ -3,17 +3,15 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      nodejs: 20
-  pre_build:
+      nodejs: 18
     commands:
-      - npm install -g yarn
-      - yarn install
+      - echo Installing dependencies...
+      - npm install
   build:
     commands:
-      - yarn build
-
+      - echo Building React frontend...
+      - npm run build
 artifacts:
   files:
-    - "**/*"
-  discard-paths: no
-  base-directory: dist
+    - '**/*'
+  base-directory: build
