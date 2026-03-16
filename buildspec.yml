@@ -5,6 +5,8 @@ phases:
     runtime-versions:
       nodejs: 18
     commands:
+      - echo Moving into frontend folder...
+      - cd customer-frontend
       - echo Installing dependencies...
       - npm install
   build:
@@ -14,4 +16,4 @@ phases:
 artifacts:
   files:
     - '**/*'
-  base-directory: build
+  base-directory: customer-frontend/build
