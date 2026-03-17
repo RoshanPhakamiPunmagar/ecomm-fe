@@ -24,7 +24,7 @@ import axios from "axios";
 const isProd = process.env.NODE_ENV === "production";
 
 export const SERVER_URL = isProd
-  ? "http://ec2-98-88-138-147.compute-1.amazonaws.com:27017" // EC2 backend
+  ? "http://ecomm-be-env-1.eba-iwpeiqgf.us-east-1.elasticbeanstalk.com" // EC2 backend
   : "http://localhost:3000";
 
 export const API_BASE_URL = `${SERVER_URL}/api/customer/v1`;
