@@ -31,6 +31,7 @@ export const API_BASE_URL = `${SERVER_URL}/api/customer/v1`;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
+  withCredentials: true,
 });
 
 api.interceptors.request.use((config) => {
