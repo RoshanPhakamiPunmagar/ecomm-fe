@@ -15,15 +15,27 @@ function Home() {
     sortBy: "createdAt",
     order: "desc",
     page: 1,
+    limit: 8, // Optional: number of products per page
   });
 
+  // Fetch products from backend
   const fetchProducts = async () => {
     try {
       setLoading(true);
 
-      const { data } = await api.get("/products", {
-        params: filters,
+      // Only send filters that have a value
+      const params = {};
+      Object.keys(filters).forEach((key) => {
+        if (
+          filters[key] !== "" &&
+          filters[key] !== null &&
+          filters[key] !== undefined
+        ) {
+          params[key] = filters[key];
+        }
       });
+
+      const { data } = await api.get("/products", { params });
 
       setProducts(data.products || []);
       setPagination(data.pagination || {});
@@ -36,15 +48,15 @@ function Home() {
 
   useEffect(() => {
     fetchProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     setFilters((prev) => ({
       ...prev,
       [name]: value,
-      page: 1,
+      page: 1, // reset to first page on filter change
     }));
   };
 
@@ -75,7 +87,6 @@ function Home() {
       {/* Filters */}
       <div className="card shadow-sm p-3 mb-4">
         <div className="row g-3">
-          {/* Search */}
           <div className="col-md-3">
             <input
               type="text"
@@ -87,7 +98,6 @@ function Home() {
             />
           </div>
 
-          {/* Min Price */}
           <div className="col-md-2">
             <input
               type="number"
@@ -99,7 +109,6 @@ function Home() {
             />
           </div>
 
-          {/* Max Price */}
           <div className="col-md-2">
             <input
               type="number"
@@ -111,7 +120,6 @@ function Home() {
             />
           </div>
 
-          {/* Sort */}
           <div className="col-md-3">
             <select
               className="form-select"
@@ -148,7 +156,6 @@ function Home() {
           <ul className="pagination">
             {[...Array(pagination.pages)].map((_, index) => {
               const pageNumber = index + 1;
-
               return (
                 <li
                   key={pageNumber}

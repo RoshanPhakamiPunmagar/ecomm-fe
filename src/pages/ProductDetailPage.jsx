@@ -1,11 +1,12 @@
 // src/pages/ProductDetailPage.jsx
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import api, { SERVER_URL } from "../services/api";
+import api from "../services/api";
 import { toast } from "react-toastify";
 
 function ProductDetailPage() {
   const { id } = useParams();
+  const SERVER_URL = process.env.REACT_APP_SERVER_URL;
 
   const [product, setProduct] = useState(null);
   const [selectedImage, setSelectedImage] = useState("");
@@ -20,9 +21,7 @@ function ProductDetailPage() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await api.get(`/products/${id}`);
-        const data = res.data.product;
-
+        const { data } = await api.get(`/products/${id}`);
         setProduct(data);
         if (data.images?.length) setSelectedImage(data.images[0]);
       } catch (err) {
@@ -57,7 +56,6 @@ function ProductDetailPage() {
   // Submit review
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
-
     if (!review.rating || !review.comment.trim()) {
       toast.error("Please provide rating and comment");
       return;
@@ -123,83 +121,6 @@ function ProductDetailPage() {
     return stars;
   };
 
-  // Dynamic product description
-  const getProductDescription = (product) => {
-    if (!product) return "";
-    switch (product.name) {
-      case "Sony WH-1000XM5":
-        return "Experience world-class noise cancellation and immersive sound with the Sony WH-1000XM5 headphones. Perfect for music lovers and frequent travelers.";
-      case "Google Pixel 8":
-        return "The Google Pixel 8 features a powerful Tensor G3 chip, amazing AI camera, and smooth Android experience for productivity and creativity.";
-      case "Dell XPS 13":
-        return "Dell XPS 13 combines sleek design with high performance, featuring a stunning InfinityEdge display and powerful Intel processor.";
-      case "MacBook Air M2":
-        return "Apple MacBook Air M2 offers incredible performance with the M2 chip, all-day battery life, and a lightweight design for ultimate portability.";
-      case "Samsung Galaxy S23":
-        return "Samsung Galaxy S23 delivers a premium smartphone experience with a high-refresh AMOLED display, versatile camera system, and fast performance.";
-      default:
-        return (
-          product.description ||
-          `${product.name} is a high-quality product for everyday use and great value.`
-        );
-    }
-  };
-
-  // Dynamic key features
-  const getKeyFeatures = (product) => {
-    if (!product) return [];
-    switch (product.name) {
-      case "Sony WH-1000XM5":
-        return [
-          "Industry-leading noise cancellation",
-          "30 hours battery life",
-          "Adaptive Sound Control",
-          "Touch sensor controls",
-          "Premium lightweight design",
-        ];
-      case "Google Pixel 8":
-        return [
-          "Google Tensor G3 processor",
-          "AI-powered camera system",
-          "6.2” OLED display",
-          "Android 14 with updates",
-          "Adaptive battery management",
-        ];
-      case "Dell XPS 13":
-        return [
-          "13.4” InfinityEdge display",
-          "12th Gen Intel Core i7 processor",
-          "Lightweight aluminum chassis",
-          "Up to 16GB RAM with SSD",
-          "Long battery life with quick charge",
-        ];
-      case "MacBook Air M2":
-        return [
-          "Apple M2 chip 8-core CPU",
-          "Retina display with True Tone",
-          "Fanless silent design",
-          "Up to 18 hours battery life",
-          "Ultra-slim and portable",
-        ];
-      case "Samsung Galaxy S23":
-        return [
-          "6.1” Dynamic AMOLED 2X display",
-          "Triple-lens camera system",
-          "Snapdragon 8 Gen 2 processor",
-          "Fast and wireless charging",
-          "IP68 water & dust resistance",
-        ];
-      default:
-        return [
-          "High-quality materials",
-          "Modern and reliable design",
-          "Comfortable and durable",
-          "Great performance and value",
-          "Suitable for daily use",
-        ];
-    }
-  };
-
   if (loading)
     return (
       <div className="container text-center mt-5">
@@ -229,6 +150,7 @@ function ProductDetailPage() {
               className="img-fluid rounded"
             />
           </div>
+
           <div className="d-flex gap-2 flex-wrap">
             {product.images?.map((img, index) => (
               <img
@@ -276,15 +198,8 @@ function ProductDetailPage() {
             <h5 className="fw-bold">Product Details</h5>
             <hr />
             <p className="text-muted" style={{ lineHeight: "1.7" }}>
-              {getProductDescription(product)}
+              {product.description || "No description available"}
             </p>
-
-            <h6 className="fw-bold mt-3">Key Features</h6>
-            <ul className="text-muted">
-              {getKeyFeatures(product).map((feature, idx) => (
-                <li key={idx}>{feature}</li>
-              ))}
-            </ul>
 
             <h6 className="fw-bold mt-3">Additional Information</h6>
             <ul className="text-muted">
